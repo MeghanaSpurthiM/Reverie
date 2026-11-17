@@ -1,0 +1,21 @@
+{
+    "name": "Reverie.Generation.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Reverie.Generation",
+        "Reverie.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "!REVERIE_PLAYER_ONLY"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

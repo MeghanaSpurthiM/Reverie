@@ -1,0 +1,8 @@
+Theme: {theme}
+
+Step 1 — Classify: is this a FRANCHISE (specific movie/show/game/book) or a SETTING (place/mood/activity with no specific franchise)?
+Step 2 — If FRANCHISE: name it and list 3 iconic hand-held objects from it. If SETTING: list 3 ordinary objects naturally found there.
+Step 3 — Which object fits the TOOL role (player swings/moves it)?
+Step 4 — Which fits the TARGET role (stationary, gets hit/collected)?
+Step 5 — Output ONLY this JSON (no other text after it):
+{"setting": "a short description of the place or franchise location", "tool": "...", "target": "...", "reasoning": "one sentence"}

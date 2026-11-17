@@ -1,0 +1,48 @@
+# Unity data too large for git. The themes ship inside the release builds.
+client/unity/Assets/StreamingAssets/SampleThemes/
+client/unity/Assets/StreamingAssets/SampleThemes.meta
+client/unity/Assets/Themes/
+client/unity/Assets/Themes.meta
+client/unity/Assets/StreamingAssets/Themes/*
+!client/unity/Assets/StreamingAssets/Themes/my-theme/
+!client/unity/Assets/StreamingAssets/Themes/my-theme.meta
+!client/unity/Assets/StreamingAssets/Themes/sample-splat/
+!client/unity/Assets/StreamingAssets/Themes/sample-splat.meta
+client/unity/SourceData/
+client/unity.zip
+client/unity/Builds/
+
+# Browser preview (Hugging Face Space): kept locally, not published here
+hosting/
+
+# Cloned dependencies (see README)
+DreamScene360/
+
+# Generated themes, logs and timing data
+server/outputs/
+server/*.log
+**/timings.csv
+**/*.jsonl
+
+# Secrets
+**/api_config.yaml
+**/api_config.json
+.env
+
+# Survey data (available on request, never committed)
+*.xlsx
+
+# Unity: client/unity/.gitignore excludes everything Unity regenerates (Library/, Temp/,
+# Logs/, UserSettings/, *.csproj, *.sln) and installed third-party content. Commit every .meta file.
+
+# Python / OS / tools
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.vscode/
+.idea/
+.gstack/
+.DS_Store
+Thumbs.db

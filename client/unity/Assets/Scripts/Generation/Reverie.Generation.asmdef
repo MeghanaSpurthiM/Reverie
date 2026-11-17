@@ -1,0 +1,22 @@
+{
+    "name": "Reverie.Generation",
+    "rootNamespace": "",
+    "references": [
+        "Reverie.Runtime",
+        "glTFast",
+        "GaussianSplatting",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "!REVERIE_PLAYER_ONLY"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

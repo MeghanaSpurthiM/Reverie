@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the paper below."
+title: "Reverie: Personalized Generative Theming of Virtual Reality Games"
+type: software
+version: 1.0.0
+license: MIT
+authors:
+  - family-names: Maadugundu
+    given-names: Meghana Spurthi
+    email: mmaadugundu@albany.edu
+    affiliation: "University at Albany, State University of New York"
+  - family-names: Kumar
+    given-names: Hiranya
+    affiliation: "University at Albany, State University of New York"
+  - family-names: Alghofaili
+    given-names: Rawan
+    affiliation: "The University of Texas at Dallas"
+  - family-names: Corace
+    given-names: Jason
+    affiliation: "University at Albany, State University of New York"
+  - family-names: Prabhakaran
+    given-names: Balakrishnan
+    affiliation: "University at Albany, State University of New York"
+keywords:
+  - virtual reality
+  - generative AI
+  - 3D Gaussian splatting
+  - personalization
+  - exergames
+preferred-citation:
+  type: article
+  title: "Reverie: Personalized Generative Theming of Virtual Reality Games"
+  journal: "Frontiers in Virtual Reality"
+  year: 2026
+  notes: "Under review"
+  authors:
+    - family-names: Maadugundu
+      given-names: Meghana Spurthi
+    - family-names: Kumar
+      given-names: Hiranya
+    - family-names: Alghofaili
+      given-names: Rawan
+    - family-names: Corace
+      given-names: Jason
+    - family-names: Prabhakaran
+      given-names: Balakrishnan

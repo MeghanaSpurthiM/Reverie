@@ -1,0 +1,9 @@
+# Packages for the parts of the server that need no GPU: the HTTP server (reverie_server.py),
+# the bake orchestration (bake_theme.py) and the tests. Same pins as environment.yml.
+#   pip install -r requirements.txt
+#   python -m unittest discover tests
+# The full server, with AudioLDM 2, needs environment.yml instead (see docs/SERVER.md).
+Pillow==10.4.0
+fastapi==0.115.5
+uvicorn==0.32.1
+pydantic==2.9.2

@@ -1,0 +1,29 @@
+// Reverie API configuration — TEMPLATE
+// Copy this file to "api_config.json" in the same folder (Assets/StreamingAssets/) and fill in
+// your own values, or paste the keys into Theme Tools > API keys > Save keys on this machine.
+// api_config.json is gitignored — never commit it.
+// In a build, an api_config.json placed in Application.persistentDataPath overrides this one.
+// Every section is optional; // comments are allowed (read by ApiConfig with Newtonsoft).
+{
+  // Reverie server (Theme Tools): same machine, remote host, or SSH-tunnelled port.
+  "server": {
+    "url": "http://localhost:8000",
+    "token": ""                      // only if the server was started with REVERIE_TOKEN
+  },
+
+  // Tool/target GLB downloads. Free account: sketchfab.com -> Settings -> Password & API.
+  // The SKETCHFAB_TOKEN environment variable also works in Theme Tools.
+  "sketchfab": {
+    "api_token": "REPLACE_WITH_YOUR_SKETCHFAB_API_TOKEN",
+    "search_endpoint": "https://api.sketchfab.com/v3/search",
+    "download_endpoint": "https://api.sketchfab.com/v3/models/{uid}/download"
+  },
+
+  // Prompt expansion and tool/target suggestions. Reverie runs Llama 3.1 locally through Ollama
+  // (`ollama pull llama3.1`), which needs no key. api_key is a placeholder for a hosted LLM; it is not used yet.
+  "ollama": {
+    "endpoint": "http://localhost:11434/v1/chat/completions",
+    "model": "llama3.1:latest",
+    "api_key": ""
+  }
+}

@@ -1,0 +1,23 @@
+# Conda env for the Reverie server: reverie_server.py, bake_theme.py, generator.py (AudioLDM 2), log_times.py.
+# DreamScene360 needs its own `dreamscene360` env: create it from the DreamScene360 README.
+#   conda env create -f server/environment.yml && conda activate reverie-audio
+# requirements.txt repeats the no-GPU subset of these pins (tests/test_server_api.py checks that they agree).
+name: reverie-audio
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - --extra-index-url https://download.pytorch.org/whl/cu124
+      - torch==2.4.0
+      - diffusers==0.30.3
+      - transformers==4.44.2
+      - accelerate==0.34.2
+      - safetensors==0.4.5
+      - numpy==1.26.4
+      - scipy==1.14.1
+      - Pillow==10.4.0
+      - fastapi==0.115.5
+      - uvicorn==0.32.1
+      - pydantic==2.9.2
