@@ -20,13 +20,14 @@ Commands are for **bash on Linux or WSL2**, run from the repository root unless 
 
 | | Used in the paper | Minimum expected to work |
 |---|---|---|
-| GPU | 1 × NVIDIA A100 80 GB | NVIDIA GPU with ≥ 16 GB (measured peak 14.8 GB), driver for CUDA 12.4 |
+| GPU | 1 × NVIDIA A100 80 GB | NVIDIA GPU with ≥ 16 GB (measured peak 14.8 GB), driver ≥ 550 (CUDA 12.4) |
 | CPU, RAM | 12 cores, 64 GB | 8 GB RAM |
 | Disk | — | ~30 GB: two conda envs ~12 GB, weights ~11 GB, ~0.5 GB per theme |
 | OS | Linux | Linux, or Windows 11 with WSL2 (Ubuntu). Native Windows and macOS are not supported for baking. |
-| Software | Conda, git, CUDA toolkit 12.4 (to compile DreamScene360's rasterizer) | same |
+| Software | Conda, git, CUDA toolkit 12.4 and GCC ≤ 13 (to compile DreamScene360's CUDA extensions) | same; §2.2 installs both into the env with conda |
+| Internet at bake time | yes: DreamScene360 fetches DINOv2 and CLIP on its first bake | or pre-fetch them (§3.3) |
 
-GPUs of the RTX 50 series (Blackwell) need PyTorch ≥ 2.7 with CUDA 12.8, newer than the PyTorch 2.4 pinned here and by DreamScene360. That combination is untested.
+GPUs of the RTX 50 series (Blackwell, `sm_120`) need PyTorch ≥ 2.7 with CUDA 12.8 and driver ≥ 570, newer than the PyTorch 2.4 pinned here and by DreamScene360. With those, the three CUDA extensions build (on an RTX 5070 Laptop GPU), but a full bake on Blackwell is untested. CUDA 13 builds of PyTorch need driver ≥ 580.
 
 Pinned versions:
 
@@ -34,6 +35,7 @@ Pinned versions:
 |---|---|---|
 | [DreamScene360](https://github.com/ShijieZhou-UCLA/DreamScene360) | commit `4a7664e4c4b2891c84c2bc0bede771049271b341` | `dreamscene360` (Python 3.8) |
 | PyTorch | 2.4.0 + CUDA 12.4 | both |
+| [DINOv2](https://github.com/facebookresearch/dinov2) (fetched by DreamScene360 through `torch.hub`) | commit `b48308a394a04ccb9c4dd3a1f0a4daa1ce0579b8`, the last that runs on Python 3.8 (§2.2) | `dreamscene360` |
 | diffusers / transformers / accelerate | 0.30.3 / 4.44.2 / 0.34.2 | `reverie-audio` (Python 3.10) |
 | FastAPI / Uvicorn / pydantic | 0.115.5 / 0.32.1 / 2.9.2 | `reverie-audio` |
 
@@ -61,16 +63,32 @@ cd DreamScene360
 conda create -y --name dreamscene360 python=3.8
 conda activate dreamscene360
 pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu124
-pip install git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
+
+# CUDA 12.4 toolkit and GCC 11 inside the env, so the build doesn't depend on the system's
+# (skip these if `nvcc --version` already prints 12.4 and `gcc --version` is 13 or older)
+conda install -y -c nvidia/label/cuda-12.4.1 cuda-nvcc cuda-cudart-dev cuda-libraries-dev cuda-cccl cuda-driver-dev
+conda install -y -c conda-forge "gxx_linux-64=11.*" "gcc_linux-64=11.*"
+export CUDA_HOME="$CONDA_PREFIX"
+export CC="$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-gcc" CXX="$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-g++"
+export LIBRARY_PATH="$CONDA_PREFIX/lib/stubs:$CONDA_PREFIX/lib:${LIBRARY_PATH:-}"   # libcuda.so stub for tiny-cuda-nn's link step
+export TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0"   # optional: only your GPU's architecture builds faster
+
+pip install --no-build-isolation git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
 pip install -r requirements.txt
-pip install submodules/diff-gaussian-rasterization-depth
-pip install submodules/simple-knn
-python -c "import torch; print(torch.cuda.is_available())"     # must print True
+pip install --no-build-isolation submodules/diff-gaussian-rasterization-depth
+pip install --no-build-isolation submodules/simple-knn
+python -c "import torch, tinycudann, diff_gaussian_rasterization, simple_knn; print(torch.cuda.is_available())"   # must print True
+
+# DINOv2 at the last commit that supports Python 3.8 (newer ones use `float | None`, Python 3.10).
+# DreamScene360 calls torch.hub.load('facebookresearch/dinov2', ...), which reuses this checkout.
+HUB="$(python -c 'import torch; print(torch.hub.get_dir())')"
+git clone https://github.com/facebookresearch/dinov2 "$HUB/facebookresearch_dinov2_main"
+git -C "$HUB/facebookresearch_dinov2_main" checkout b48308a394a04ccb9c4dd3a1f0a4daa1ce0579b8
 conda deactivate
 cd ..
 ```
 
-The two `submodules/` packages and tiny-cuda-nn compile CUDA code, so they need the CUDA 12.4 toolkit (`nvcc --version`) and, on Ubuntu, `sudo apt-get install -y build-essential libglm-dev`. The study does **not** use DreamScene360's GPT-4V self-refinement, so no OpenAI key is needed.
+The two `submodules/` packages and tiny-cuda-nn compile CUDA code. The conda lines above provide the CUDA 12.4 toolkit, GCC 11 and the `libcuda.so` link stub; with a system toolkit instead, you need CUDA 12.4 (`nvcc --version`), GCC ≤ 13 and, on Ubuntu, `sudo apt-get install -y build-essential libglm-dev`. If you set `TORCH_HOME`, set it to the same value when you run the server, because the DINOv2 checkout lives under it. The study does **not** use DreamScene360's GPT-4V self-refinement, so no OpenAI key is needed.
 
 ### 2.3 Reverie server env
 
@@ -136,6 +154,17 @@ python -c "from diffusers import AudioLDM2Pipeline; AudioLDM2Pipeline.from_pretr
 ```
 
 This fetches only the `.safetensors` files the pipeline needs. The weights go to the Hugging Face cache (`~/.cache/huggingface`). Set `HF_HOME` to put the cache on another disk, and `AUDIOLDM2_MODEL_ID` to load a different copy (a Hub ID or a local folder).
+
+### 3.3 Models fetched at bake time
+
+On its first bake DreamScene360 also downloads, into the caches of the `dreamscene360` env:
+
+| Model | Fetched by | Cache |
+|---|---|---|
+| DINOv2 ViT-B/14 code and weights (~350 MB) | `torch.hub` in `utils/feature_extractor.py` | `$TORCH_HOME/hub` (default `~/.cache/torch/hub`) |
+| CLIP ViT-L/14 text encoder (~1.7 GB) | `transformers` in StitchDiffusion | `$HF_HOME/hub` (default `~/.cache/huggingface/hub`) |
+
+If the GPU nodes have no internet, run one bake on a node that does, or copy both caches over, and keep `TORCH_HOME` and `HF_HOME` the same when serving.
 
 ## 4. Quick test (no GPU, ~5 min)
 
@@ -338,7 +367,10 @@ The steps are `preflight` (checks DreamScene360, its env, Pillow and the audio p
 | `Preflight failed: DreamScene360 not found` | Clone it next to `server/` (§2.1) or set `DREAMSCENE360_DIR`. |
 | `conda env 'dreamscene360' not found` | Create it with that name (§2.2), or set `DREAMSCENE360_PYTHON` to its Python. |
 | `generator.py failed to import` | Run the bake from the `reverie-audio` env, not `dreamscene360` or base. |
-| DreamScene360 fails building `diff-gaussian-rasterization-depth` | The CUDA toolkit doesn't match PyTorch's CUDA 12.4. Install toolkit 12.4 and `sudo apt-get install -y libglm-dev`. |
+| DreamScene360 fails building `diff-gaussian-rasterization-depth` | The CUDA toolkit doesn't match PyTorch's CUDA 12.4. Install toolkit 12.4 and `sudo apt-get install -y libglm-dev`, or use the conda toolkit (§2.2). |
+| `unsupported GNU version! gcc versions later than 13 are not supported` | CUDA 12.4 needs GCC ≤ 13. Install GCC 11 into the env and set `CC`/`CXX` (§2.2). |
+| tiny-cuda-nn fails with `cannot find -lcuda` | The build node has no driver library to link against. Install `cuda-driver-dev` and put `$CONDA_PREFIX/lib/stubs` on `LIBRARY_PATH` (§2.2). |
+| Bake fails in DreamScene360 while loading `dinov2`, with a `TypeError` about `\|` (Python 3.10 type syntax) | `torch.hub` fetched a DINOv2 that needs Python 3.10. Check out commit `b48308a` in `$TORCH_HOME/hub/facebookresearch_dinov2_main` (§2.2). |
 | `FileNotFoundError` for `omnidata_dpt_depth_v2.ckpt` or `lora.safetensors` | A checkpoint is missing. Run the `ls` check in §3.1. |
 | `--3dgs-only needs a panorama` | Run a full bake first, upload one with `PUT /themes/<slug>/panorama`, or pass `--panorama PATH`. |
 | CUDA out of memory | 3DGS training needs ~15 GB. Close other GPU programs, including Unity, or use a larger GPU. |

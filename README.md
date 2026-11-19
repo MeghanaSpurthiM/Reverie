@@ -17,7 +17,7 @@ Browser demo: [huggingface.co/spaces/MeghanaSpurthiM/ReverieDemo](https://huggin
 | Desktop play | Windows 10/11, Direct3D 12 GPU |
 | VR play | plus Meta Quest 3 over Quest Link (study: RTX 5070 laptop) |
 | Unity | 6000.0.56f1, URP 17.0.4 |
-| Generation | Linux or WSL2, NVIDIA GPU ≥ 16 GB, CUDA 12.4, ~30 GB disk |
+| Generation | Linux or WSL2, NVIDIA GPU ≥ 16 GB with driver ≥ 550, CUDA 12.4 toolkit and GCC ≤ 13 (both installable with conda), ~30 GB disk ([details](docs/SERVER.md#1-requirements)) |
 
 ## Pipeline
 
